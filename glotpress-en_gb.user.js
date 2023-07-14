@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name         GlotPress: Highlight matches
+// @name         GlotPress: en_GB
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Useful for easily spotting matching original and translations for English variants. Does NOT mean the translation is accurate for that locale, only that it hasn't changed from the original en-US.
 // @author       Gary Jones
 // @match        https://translate.wordpress.org/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=wordpress.org
 // @grant        none
-// @downloadURL  https://raw.githubusercontent.com/GaryJones/glotpress-english-variant-utilities/main/userscript.js
-// @updateURL    https://raw.githubusercontent.com/GaryJones/glotpress-english-variant-utilities/main/userscript.js
+// @downloadURL  https://raw.githubusercontent.com/GaryJones/glotpress-english-variant-utilities/main/glotpress-en_gb.user.js
+// @updateURL    https://raw.githubusercontent.com/GaryJones/glotpress-english-variant-utilities/main/glotpress-en_gb.user.js
 // ==/UserScript==
 
 (function() {
