@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GlotPress: en_GB
 // @namespace    http://tampermonkey.net/
-// @version      0.4.1
+// @version      0.4.2
 // @description  Utilities for English-variant locales: colour-codes translations that match/differ from the en-US original, and adds a bulk "Copy original & save" action so untouched strings can be submitted in seconds. A matching translation does NOT mean it is accurate for the locale, only that it hasn't changed from the original.
 // @author       Gary Jones
 // @match        https://translate.wordpress.org/*
@@ -401,8 +401,26 @@
             throw new Error( error ? error.textContent.trim().slice( 0, 200 ) : 'Import rejected' );
         }
 
-        const notice = doc.querySelector( '.notice' );
-        return notice ? notice.textContent.trim().slice( 0, 200 ) : 'Import finished';
+        // GlotPress's only success signal is "<n> translations were added" — a
+        // bulk count that says nothing about strings it declined to create (an
+        // approved or identical translation already existed for them). Work the
+        // shortfall out from the number we submitted so the run reports it,
+        // matching the per-row path's "already existed" feedback.
+        const notices = [ ...doc.querySelectorAll( '.notice' ) ]
+            .map( ( el ) => el.textContent.trim() )
+            .filter( Boolean );
+        const notice = notices.find( ( t ) => /translations?\s+(?:was|were)\s+added/i.test( t ) )
+            || notices[ 0 ]
+            || 'Import finished';
+
+        const added = notice.match( /([\d,]+)\s+translations?\s+(?:was|were)\s+added/i );
+        if ( added ) {
+            const skipped = Math.max( 0, items.length - parseInt( added[ 1 ].replace( /,/g, '' ), 10 ) );
+            if ( skipped ) {
+                return notice.slice( 0, 160 ) + ' · ' + skipped + ' already translated, skipped';
+            }
+        }
+        return notice.slice( 0, 200 );
     }
 
     /* ------------------------- Bulk runner ---------------------------- */
