@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GlotPress: en_GB
 // @namespace    http://tampermonkey.net/
-// @version      0.4.0
+// @version      0.4.1
 // @description  Utilities for English-variant locales: colour-codes translations that match/differ from the en-US original, and adds a bulk "Copy original & save" action so untouched strings can be submitted in seconds. A matching translation does NOT mean it is accurate for the locale, only that it hasn't changed from the original.
 // @author       Gary Jones
 // @match        https://translate.wordpress.org/*
@@ -49,26 +49,33 @@
             return;
         }
 
-        const translationText = translationCell.innerText;
-
-        // Context tags only appear in the original cell, so hide them while
-        // measuring (innerText excludes hidden content), then restore them.
-        const originalOnlyChrome = [ ...originalCell.querySelectorAll( '.original-tags' ) ];
-        const previousDisplays = originalOnlyChrome.map( ( el ) => el.style.display );
-        originalOnlyChrome.forEach( ( el ) => {
-            el.style.display = 'none';
-        } );
+        // GlotPress adds chrome that isn't part of the string: context tags
+        // (.original-tags, original cell only) and whitespace-indicator glyphs
+        // — → for a tab, ↵ for a newline — wrapped in .invisibles /
+        // .invisible-spaces spans in both cells. Hide all of it before
+        // measuring, since innerText excludes hidden content, then restore it.
+        //
+        // We hide the glyph spans rather than string-replacing → and ↵, so
+        // that literal arrow characters which are genuinely part of the string
+        // are preserved. Otherwise a string such as "Settings → Connectors"
+        // has its arrow stripped from the original but not the translation,
+        // and is wrongly flagged as differing (shown red).
+        const measure = ( cell ) => {
+            const chrome = [ ...cell.querySelectorAll( '.original-tags, .invisibles, .invisible-spaces' ) ];
+            const previousDisplays = chrome.map( ( el ) => el.style.display );
+            chrome.forEach( ( el ) => {
+                el.style.display = 'none';
+            } );
+            const text = cell.innerText;
+            chrome.forEach( ( el, i ) => {
+                el.style.display = previousDisplays[ i ];
+            } );
+            return text;
+        };
 
         // We compare the whole table cells (including the "Singular" and
-        // "Plural" labels, which appear in both), with visible whitespace
-        // indicator glyphs stripped out.
-        const originalText = originalCell.innerText.replaceAll( '↵', '' ).replaceAll( '→', '' );
-
-        originalOnlyChrome.forEach( ( el, i ) => {
-            el.style.display = previousDisplays[ i ];
-        } );
-
-        const matches = translationText === originalText;
+        // "Plural" labels, which appear in both).
+        const matches = measure( translationCell ) === measure( originalCell );
         translationCell.style.color = matches ? 'green' : 'red';
         translationCell.title = matches ? 'Same as original' : 'Differs from original';
     }
