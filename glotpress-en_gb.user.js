@@ -18,7 +18,9 @@
 
     // Bulk runs above this size are sent as a single PO import request;
     // smaller runs use per-row saves, which update rows in place.
-    const IMPORT_THRESHOLD = 10;
+    // Set high so all strings go via the per-row path by default: bulk PO
+    // import doesn't attribute translations to the submitting user.
+    const IMPORT_THRESHOLD = 100;
     // Number of per-row save requests in flight at once (row-by-row path
     // only). Be kind to wordpress.org.
     const CONCURRENCY = 4;
