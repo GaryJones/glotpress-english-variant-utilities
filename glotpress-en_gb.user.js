@@ -196,9 +196,11 @@
             return { context: labelled[ 1 ], uncertain: false };
         }
 
-        // A tag we don't recognise: let the row-by-row path handle this
-        // row, since that addresses originals by id rather than content.
-        return { context: text, uncertain: ! text };
+        // No context we can read, such as a lone "Priority: high" bubble or
+        // a tag we don't recognise. Sending its text as msgctxt would stop
+        // the import matching the string, so let the row-by-row path handle
+        // this row, since that addresses originals by id rather than content.
+        return { context: null, uncertain: true };
     }
 
     /* ---------------------- Row-by-row engine ------------------------- */
