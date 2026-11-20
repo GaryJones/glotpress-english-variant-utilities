@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GlotPress: en_GB
 // @namespace    http://tampermonkey.net/
-// @version      0.4.2
+// @version      0.4.3
 // @description  Utilities for English-variant locales: colour-codes translations that match/differ from the en-US original, and adds a bulk "Copy original & save" action so untouched strings can be submitted in seconds. A matching translation does NOT mean it is accurate for the locale, only that it hasn't changed from the original.
 // @author       Gary Jones
 // @match        https://translate.wordpress.org/*
@@ -53,9 +53,14 @@
 
         // GlotPress adds chrome that isn't part of the string: context tags
         // (.original-tags, original cell only) and whitespace-indicator glyphs
-        // — → for a tab, ↵ for a newline — wrapped in .invisibles /
-        // .invisible-spaces spans in both cells. Hide all of it before
-        // measuring, since innerText excludes hidden content, then restore it.
+        // — → for a tab, ↵ for a newline — wrapped in .invisibles spans. Hide
+        // it before measuring, since innerText excludes hidden content, then
+        // restore it.
+        //
+        // .invisible-spaces is NOT chrome: it wraps the real leading, trailing
+        // or repeated spaces, and translate.wordpress.org only adds it in the
+        // original cell. Hiding it dropped those spaces from the original, so
+        // an exact copy was wrongly flagged as differing (shown red).
         //
         // We hide the glyph spans rather than string-replacing → and ↵, so
         // that literal arrow characters which are genuinely part of the string
@@ -63,7 +68,7 @@
         // has its arrow stripped from the original but not the translation,
         // and is wrongly flagged as differing (shown red).
         const measure = ( cell ) => {
-            const chrome = [ ...cell.querySelectorAll( '.original-tags, .invisibles, .invisible-spaces' ) ];
+            const chrome = [ ...cell.querySelectorAll( '.original-tags, .invisibles' ) ];
             const previousDisplays = chrome.map( ( el ) => el.style.display );
             chrome.forEach( ( el ) => {
                 el.style.display = 'none';
