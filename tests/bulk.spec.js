@@ -285,19 +285,24 @@ test.describe( 'import for large batches', () => {
 		expect( saves ).toBe( 104 );
 	} );
 
-	// Known bug: a "Priority: high" bubble with no context is sent as the
-	// context, so the import can't match the string and silently skips it.
-	test( 'a priority bubble is not sent as the context', async ( { page } ) => {
-		test.fail( true, 'Known bug: rowContext() reads any tag as the context' );
+	// Regression: a "Priority: high" bubble with no context was sent as the
+	// context, so the import couldn't match the string and silently skipped it.
+	test( 'a row with only a priority tag is saved row by row', async ( { page } ) => {
 		let po = '';
+		const saves = [];
 		await openSet( page, {
 			handle: async ( route, request ) => {
 				if ( 'POST' === request.method() && IMPORT_URL === request.url() ) {
 					po = request.postDataBuffer().toString( 'utf8' );
-					await route.fulfill( { headers: { 'x-test-redirected-to': IMPORT_URL }, contentType: 'text/html', body: IMPORT_HTML } );
+					await route.fulfill( {
+						headers: { 'x-test-redirected-to': SET_URL },
+						contentType: 'text/html',
+						body: SET_HTML.replace( '<body>', '<body><div class="notice">103 translations were added</div>' ),
+					} );
 					return true;
 				}
 				if ( isSave( request ) ) {
+					saves.push( new URLSearchParams( request.postData() ).get( 'original_id' ) );
 					await route.fulfill( { body: IDENTICAL } );
 					return true;
 				}
@@ -308,9 +313,10 @@ test.describe( 'import for large batches', () => {
 		await page.getByRole( 'button', { name: 'Select untranslated' } ).click();
 		await tick( page, 'priority only' );
 		await copyButton( page ).click();
-		await expect( status( page ) ).toContainText( 'already existed' );
+		await expect( status( page ) ).toContainText( 'Saved 0 · 2 already existed' );
 
-		expect( po ).toContain( 'msgid "html_lang_attribute"' );
+		expect( po ).not.toContain( 'html_lang_attribute' );
 		expect( po ).not.toContain( 'Priority: high' );
+		expect( saves.sort() ).toEqual( [ '2379367', '800100' ] );
 	} );
 } );

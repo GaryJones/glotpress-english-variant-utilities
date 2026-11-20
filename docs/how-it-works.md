@@ -11,6 +11,8 @@ For each row with a translation, the script compares the visible text of the ori
 
 `.invisible-spaces` is deliberately not hidden. On translate.wordpress.org it wraps real leading, trailing or repeated spaces, and only in the original cell, so hiding it would drop those spaces from one side of the comparison.
 
+`innerText` also ignores CSS on an element that isn't rendered. GlotPress hides a row's preview while its editor is open, so the script shows the row for the moment it measures it. Before 0.4.4, a string with newlines or tabs whose editor was open (including one GlotPress opened automatically because a filter matched only that string) was shown red.
+
 A `MutationObserver` on the table body re-colours rows after GlotPress replaces them.
 
 ## Saving a row
@@ -42,7 +44,7 @@ The import differs from row by row saves in ways that matter:
 - **Matching.** GlotPress matches each PO entry to an original by its exact text and context. A string with the wrong context isn't matched.
 - **Feedback.** GlotPress only reports how many translations it added, never which strings it skipped (because a translation already existed, for example). The script reports the difference between the number submitted and the number added as "already translated, skipped".
 
-The context comes from the `.context` bubble in the row's tags. If a row has a tag list but no text in it, the script can't tell the context, so it saves that row individually instead; that path addresses originals by id rather than by text.
+The context comes from the `.context` bubble in the row's tags. If a row has tags but no context bubble (only a "Priority: high" bubble, for example), the script saves that row individually instead, since that path addresses originals by id rather than by text. Before 0.4.4, such a row was imported with its tag text as the context, so GlotPress couldn't match it and skipped it.
 
 ## Settings
 

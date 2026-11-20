@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GlotPress: en_GB
 // @namespace    http://tampermonkey.net/
-// @version      0.4.3
+// @version      0.4.4
 // @description  Utilities for English-variant locales: colour-codes translations that match/differ from the en-US original, and adds a bulk "Copy original & save" action so untouched strings can be submitted in seconds. A matching translation does NOT mean it is accurate for the locale, only that it hasn't changed from the original.
 // @author       Gary Jones
 // @match        https://translate.wordpress.org/*
@@ -80,9 +80,18 @@
             return text;
         };
 
+        // GlotPress hides a row's preview while its editor is open (and opens
+        // it automatically when a filter matches one row). innerText ignores
+        // CSS on an element that isn't rendered, so the glyphs hidden above
+        // would be counted and the row wrongly shown red. Show the row while
+        // measuring; nothing is painted in between.
+        const previousRowDisplay = row.style.display;
+        row.style.display = 'table-row';
+
         // We compare the whole table cells (including the "Singular" and
         // "Plural" labels, which appear in both).
         const matches = measure( translationCell ) === measure( originalCell );
+        row.style.display = previousRowDisplay;
         translationCell.style.color = matches ? 'green' : 'red';
         translationCell.title = matches ? 'Same as original' : 'Differs from original';
     }
@@ -187,9 +196,11 @@
             return { context: labelled[ 1 ], uncertain: false };
         }
 
-        // A tag we don't recognise: let the row-by-row path handle this
-        // row, since that addresses originals by id rather than content.
-        return { context: text, uncertain: ! text };
+        // No context we can read, such as a lone "Priority: high" bubble or
+        // a tag we don't recognise. Sending its text as msgctxt would stop
+        // the import matching the string, so let the row-by-row path handle
+        // this row, since that addresses originals by id rather than content.
+        return { context: null, uncertain: true };
     }
 
     /* ---------------------- Row-by-row engine ------------------------- */
