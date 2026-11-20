@@ -11,6 +11,8 @@ For each row with a translation, the script compares the visible text of the ori
 
 `.invisible-spaces` is deliberately not hidden. On translate.wordpress.org it wraps real leading, trailing or repeated spaces, and only in the original cell, so hiding it would drop those spaces from one side of the comparison.
 
+`innerText` also ignores CSS on an element that isn't rendered. GlotPress hides a row's preview while its editor is open, so the script shows the row for the moment it measures it. Before 0.4.4, a string with newlines or tabs whose editor was open (including one GlotPress opened automatically because a filter matched only that string) was shown red.
+
 A `MutationObserver` on the table body re-colours rows after GlotPress replaces them.
 
 ## Saving a row
