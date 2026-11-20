@@ -1,0 +1,13 @@
+{
+  "name": "glotpress-english-variant-utilities",
+  "private": true,
+  "description": "Development tooling for the GlotPress en_GB userscript. Not needed to use the script.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1"
+  }
+}
