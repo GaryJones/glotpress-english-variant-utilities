@@ -61,13 +61,9 @@ test( 'a row GlotPress replaces is coloured again', async ( { page } ) => {
 	await expect( translation( page, 'trailing space' ) ).toHaveCSS( 'color', RED );
 } );
 
-// Known bug: innerText ignores CSS on a row that isn't rendered, so the glyphs
-// are counted. GlotPress hides a row's preview while its editor is open (and
-// opens it automatically when a filter matches one row), so that row is
-// coloured red until something re-colours it.
+// Regression: innerText ignores CSS on a row that isn't rendered, so a row
+// hidden while its editor was open was measured with its glyphs and shown red.
 test( 'a row whose editor is open is coloured correctly', async ( { page } ) => {
-	test.fail( true, 'Known bug: hidden rows are measured with their glyphs' );
-
 	await page.evaluate( () => {
 		const old = document.querySelector( 'tr.preview[data-fixture="newline glyphs"]' );
 		const replacement = old.cloneNode( true );
@@ -77,6 +73,7 @@ test( 'a row whose editor is open is coloured correctly', async ( { page } ) => 
 		old.replaceWith( replacement );
 	} );
 	await expect( translation( page, 'newline glyphs' ) ).toHaveAttribute( 'title', /original/ );
+	await expect( row( page, 'newline glyphs' ) ).toBeHidden();
 	await row( page, 'newline glyphs' ).evaluate( ( tr ) => {
 		tr.style.display = '';
 	} );
