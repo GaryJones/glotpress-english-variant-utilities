@@ -43,9 +43,14 @@ It reads public pages, so it doesn't need you to be logged in. Logged-out pages 
 3. Run `npm test`.
 4. Bump `@version` in the userscript header. Tampermonkey only updates to a higher version, so without a bump nobody gets the change.
 5. Update the [docs](docs/README.md) if behaviour changes.
-6. Open a pull request against `main`.
+6. Commit your changes, signed (see below).
+7. Open a pull request against `main`. Pull requests are merged with a merge commit, so every commit reaches `main` as you wrote it.
 
 Commit messages use [Conventional Commits](https://www.conventionalcommits.org/) prefixes (`fix:`, `feat:`, `docs:`, `test:` and so on), and say why the change was needed.
+
+### Signed commits
+
+`main` only accepts commits with a verified signature, so a pull request containing an unsigned commit can't be merged. Set up signing before you commit, using [GitHub's guide to signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits). If you've already pushed unsigned commits, re-sign them with `git rebase --exec 'git commit --amend --no-edit -S' main`, then force-push your branch.
 
 ## Testing on translate.wordpress.org
 
